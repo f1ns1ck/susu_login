@@ -1,9 +1,13 @@
 from playwright.async_api import async_playwright
-import time, asyncio
+import time, asyncio, logging, os
 from funcs.cookies import *
-import logging
 
-logging.basicConfig(level=logging.INFO, format="time: %(asctime)s | level: %(levelname)s | %(message)s")
+logging.basicConfig(level=logging.INFO, 
+                    format="time: %(asctime)s | level: %(levelname)s | %(message)s",
+                    filename="logwarning.log",
+                    filemode="a+",
+                    encoding="utf-8"
+                    )
 
 
 class Susu: 
@@ -12,11 +16,12 @@ class Susu:
         self.page = None
         self.cookies = cookies
 
+    # Создание браузера
     async def CreateBrowser(self): 
         # Создает экземпляр контекста 
         context = await self.browser.new_context(
             viewport={'width': 700, 'height': 500},
-            user_agent='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
+            user_agent=os.getenv("USER_AGENT"),
             ignore_https_errors=True,
             bypass_csp=True,
             no_viewport=False,
@@ -30,21 +35,23 @@ class Susu:
         logging.info("Получение куки")
 
 
-    # Вход в аккаунт
+    # Переход на ссылку с курсами
     async def Login(self): 
         try: 
             await self.page.goto("https://edu.susu.ru/my/courses.php")
             logging.info("Вход в аккаунт выполнен")
+            print(self.cookies)
             time.sleep(100)
         except Exception as e:
             print(e)
 
 async def Start(): 
     logging.info("Запуск программы")
-    # Инициализация класса reqSusu 
+    # Инициализация класса CookieGrab | Получение куки 
     edu = CookieGrab()
     # Получение куки
-    cookie = edu.Login()
+    cookie = edu.SusuLogin()
+    print(cookie)
 
     # Создание экземпляра браузера
     async with async_playwright() as s: 
